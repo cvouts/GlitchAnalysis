@@ -1,11 +1,15 @@
 import pandas as pd
+from numpy import mean, std
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.multioutput import RegressorChain
+from sklearn.svm import LinearSVR
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, RepeatedKFold, KFold
 from warnings import simplefilter
 simplefilter(action="ignore", category=FutureWarning)
 
-data_input = pd.read_csv("input.csv", sep=",")
-data_output = pd.read_csv("output.csv", sep=",")
+data_input = pd.read_csv("input_voltages.csv", sep=",")
+data_output = pd.read_csv("output_voltages.csv", sep=",")
 
 x = data_input[["C", "T1", "T2", "DIS", "HDIST", "V3-0"]]
 y = data_output[["V3-1", "V3-2", "V3-3", "V3-4", "V3-5", "V3-6", "V3-7", "V3-8", "V3-9", "V3-10", "V3-11", "V3-12",
@@ -17,36 +21,51 @@ y = data_output[["V3-1", "V3-2", "V3-3", "V3-4", "V3-5", "V3-6", "V3-7", "V3-8",
 params = {"n_neighbors": [2, 3, 4, 5, 6, 7, 8, 9, 10]}
 knn = KNeighborsRegressor()
 
-best_accuracy = 0
-for it in range(10):    # making multiple models in order to eventually save the one with the highest accuracy
+print("KFold")
+cv = KFold(n_splits=10, random_state=1)
+ne = cross_val_score(KNeighborsRegressor(), x, y, cv=cv)
+print("Neighbors:", mean(ne), std(ne))
+rf = cross_val_score(RandomForestRegressor(), x, y, cv=cv)
+print("Random Forest:", mean(rf), std(rf))
 
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1)
+print("Repeated KFold")
+cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+ne = cross_val_score(KNeighborsRegressor(), x, y, cv=cv)
+print("Neighbors:", mean(ne), std(ne))
+rf = cross_val_score(RandomForestRegressor(), x, y, cv=cv)
+print("Random Forest:", mean(rf), std(rf))
 
-    neighbor_selection_model = GridSearchCV(knn, params, cv=5)  # finding the best number of neighbors
-    neighbor_selection_model.fit(x_train, y_train)
-    neighbor_number = sum(neighbor_selection_model.best_params_.values())
-    model = KNeighborsRegressor(n_neighbors=neighbor_number)
-    model.fit(x_train, y_train)
 
-    # finding accuracy for each model
-    k = 0
-    below50 = 0
-    above80 = 0
-    for i in range(0, len(y_test.count(axis=1))):
-        temp = k
-        for j in range(0, len(y_test.count(axis=0))):
-            if y_test.iat[i, j] == model.predict(x_test)[i, j].round(4):
-                k += 1
-        print("For instance ", i, " the accuracy was ", round((k-temp)*100/50, 2), "%")
-        if round((k-temp)*100/50, 2) < 50:
-            below50 += 1
-        elif round((k-temp)*100/50, 2) >= 80:
-            above80 += 1
-
-    accuracy = round((k * 100 / (len(y_test.count(axis=1))*len(y_test.count(axis=0)))), 2)
-    print(it, ":", accuracy, "% accuracy, with the number of instances equal or above 80% at", above80,
-          "/343 and below 50% at", below50, "/343")
-    if accuracy > best_accuracy:
-        best_accuracy = accuracy
-
-print(best_accuracy)
+# best_accuracy = 0
+# for it in range(10):    # making multiple models in order to eventually save the one with the highest accuracy
+#
+#     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1)
+#
+#     neighbor_selection_model = GridSearchCV(knn, params, cv=5)  # finding the best number of neighbors
+#     neighbor_selection_model.fit(x_train, y_train)
+#     neighbor_number = sum(neighbor_selection_model.best_params_.values())
+#     model = KNeighborsRegressor(n_neighbors=neighbor_number)
+#     model.fit(x_train, y_train)
+#
+#     # finding accuracy for each model
+#     k = 0
+#     below50 = 0
+#     above80 = 0
+#     for i in range(0, len(y_test.count(axis=1))):
+#         temp = k
+#         for j in range(0, len(y_test.count(axis=0))):
+#             if y_test.iat[i, j] == model.predict(x_test)[i, j].round(4):
+#                 k += 1
+#         print("For instance ", i, " the accuracy was ", round((k-temp)*100/50, 2), "%")
+#         if round((k-temp)*100/50, 2) < 50:
+#             below50 += 1
+#         elif round((k-temp)*100/50, 2) >= 80:
+#             above80 += 1
+#
+#     accuracy = round((k * 100 / (len(y_test.count(axis=1))*len(y_test.count(axis=0)))), 2)
+#     print(it, ":", accuracy, "% accuracy, with the number of instances equal or above 80% at", above80,
+#           "/343 and below 50% at", below50, "/343")
+#     if accuracy > best_accuracy:
+#         best_accuracy = accuracy
+#
+# print(best_accuracy)
