@@ -1,88 +1,107 @@
 import os
 
-def main():
+NUMBER_OF_VALUES = 500
 
-	f = open("voltages.txt", "r")
-	if os.path.isfile("formatted_voltages.cvs"):
-		os.remove("formatted_voltages.csv")
-	g = open("formatted_voltages.csv", "a+")
+text_data = open("Data/TXT/voltages_big.txt", "r")
+if os.path.isfile("Data/CSV/formatted_voltages_big.cvs"):
+	os.remove("Data/CSV/Voltages/formatted_voltages_big.csv")
+csv_data = open("Data/CSV/Voltages/formatted_voltages_big.csv", "w")
 
-	vtimes=""
-	for i in range(0,51):
-		vtimes = vtimes + (",V3-" + str(i))
+vtimes = ""
+for i in range(0, NUMBER_OF_VALUES+1):
+	vtimes = vtimes + (",V3-" + str(i))
 
-	g.write("C,T1,T2,DIS,HDIST")
-	g.write(vtimes)
-	g.write("\n")
+csv_data.write("C,T1,T2,DIS,HDIST")
+csv_data.write(vtimes)
+csv_data.write("\n")
 
-	if f.mode == "r":
-		f1 = f.readlines()
+all_lines = text_data.readlines()
 
-		numberOfLines = 1
+line_number = 1
+recurring = 0
+
+for line in all_lines: # for line in list of lines
+
+	if line_number == 1 or recurring == NUMBER_OF_VALUES+2: # replacing TOT with a line change
+		if recurring == NUMBER_OF_VALUES+2:
+			csv_data.write("\n")
+		line_number += 1
+		recurring += 1
+		continue
+	elif line_number == 3 or recurring == NUMBER_OF_VALUES+4: # removing the line that simply mentions 3 in reference to V3, but
+		csv_data.write(",")							# connecting what is before and what comes next with ','
+		line_number += 1
 		recurring = 0
+		continue
 
-		for line in f1: # for line in list of lines
+	if line.find("DIS") != -1:  # removing the letters
 
-			if numberOfLines == 1 or recurring == 52: # replacing TOT with a line change
-				if recurring == 52:
-					g.write("\n")
-				numberOfLines += 1
-				recurring += 1 
-				continue
-			elif numberOfLines == 3 or recurring == 54: # removing the line that simply mentions 3 in reference to V3, but 
-				g.write(",")							# connecting what is before and what comes next with ','						
-				numberOfLines +=1
-				recurring = 0
-				continue
+		line = line.replace("C:", "")
+		line = line.replace("DIS:", ",")
+		line = line.replace("HDIST:", ",")
+		line = line.replace("T1:", ",")
+		line = line.replace("T2:", ",")
+		line = line.replace("\n", "")
 
-			if line.find("DIS") != -1: # removing the letters
+	for char in line: # removing spaces
+		if char == " ":
+			output = line.replace(char, "")
 
-				line = line.replace("C:", "")
-				line = line.replace("DIS:", ",")
-				line = line.replace("HDIST:", ",")
-				line = line.replace("T1:", ",")
-				line = line.replace("T2:", ",")
-				line = line.replace("\n", "")
+	if output.find("p") != -1:
+		time, voltage = output.split("p")
+		if recurring == NUMBER_OF_VALUES:
+			output = voltage
+		elif recurring < NUMBER_OF_VALUES:
 
-			for char in line: # removing spaces
-				if char == " ":
-					y = line.replace(char, "")
+			if voltage.find("m") != -1:
+				voltage_string, _ = voltage.split("m")
+				voltage_number = float(voltage_string) / 1000
+				voltage_number = round(voltage_number, 7)
+				voltage = str(voltage_number)
 
-			if y.find("p") != -1:
-				time, voltage = y.split("p")
-				if recurring == 50:
-					y = voltage
-				elif recurring < 50:
+			output = voltage + "," # keeping only the voltage values
 
-					if voltage.find("m") != -1:
-						voltage_string, _ = voltage.split("m")
-						voltage_number = float(voltage_string) / 1000
-						voltage_number = round(voltage_number, 7)
-						voltage = str(voltage_number)
+		output = output.replace("\n", "")
 
-					y = voltage + "," # keeping only the voltage values
+		# if output.find("m") != -1:
+		# 	actual, _ = output.split("m")
+		# 	number = float(actual) / 1000
+		# 	number = round(number, 7)
+		# 	actual = str(number)
+		# 	#print(actual)
+		# 	output = actual
 
-				y = y.replace("\n", "")
+	if recurring == 0: # the initial voltage is not included in the previous if and is also always 1.1000
+		output = "1.1000,"
 
-				# if y.find("m") != -1:
-				# 	actual, _ = y.split("m")
-				# 	number = float(actual) / 1000
-				# 	number = round(number, 7)
-				# 	actual = str(number)
-				# 	#print(actual)
-				# 	y = actual
+	if recurring != NUMBER_OF_VALUES+1: # if this is removed, the final value of every result is going to be doubled, due to the --- line (recurring 51)
+		csv_data.write(output)
 
-			if recurring == 0: # the initial voltage is not included in the previous if and is also always 1.1000
-				y = "1.1000,"
+	line_number += 1
+	recurring += 1
 
-			if recurring != 51: # if this is removed, the final value of every result is going to be doubled, due to the --- line (recurring 51)
-				g.write(y)
+text_data.close()
+csv_data.close()
 
-			numberOfLines += 1
-			recurring += 1
+csv_data = open("Data/CSV/Voltages/formatted_voltages_big.csv", "r")
+csv_input = open("Data/CSV/Voltages/input_voltages_big.csv", "w")
+csv_output = open("Data/CSV/Voltages/output_voltages_big.csv", "w")
 
-	f.close()
-	g.close()
+lines = csv_data.readlines()
+for line in lines:
 
-if __name__ == "__main__":
-	main()
+	if line.find(",1.1000,") == -1:
+		inp, outp = line.split(",V3-0,")
+		csv_input.write(inp)
+		csv_input.write(",V3-0\n")
+		csv_output.write(outp)
+	else:
+		inp, outp = line.split(",1.1000,")
+
+		csv_input.write(inp)
+		csv_input.write(",1.1000\n")
+		csv_output.write(outp)
+
+csv_input.close()
+csv_output.close()
+csv_data.close()
