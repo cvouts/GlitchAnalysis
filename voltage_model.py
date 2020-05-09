@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_sc
 from warnings import simplefilter
 simplefilter(action="ignore", category=FutureWarning)
 
-data_input = pd.read_csv("input_voltages.csv", sep=",")
-data_output = pd.read_csv("output_voltages.csv", sep=",")
+data_input = pd.read_csv("Data/CSV/Voltages/input_voltages.csv", sep=",")
+data_output = pd.read_csv("Data/CSV/Voltages/output_voltages.csv", sep=",")
 
 x = data_input[["C", "T1", "T2", "DIS", "HDIST", "V3-0"]]
 y = data_output[["V3-1", "V3-2", "V3-3", "V3-4", "V3-5", "V3-6", "V3-7", "V3-8", "V3-9", "V3-10", "V3-11", "V3-12",
