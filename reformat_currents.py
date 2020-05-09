@@ -2,14 +2,14 @@ import os
 
 NUMBER_OF_VALUES = 500
 
-spice_output = open("asdf.txt", "r")
-if os.path.isfile("formatted_currents.cvs"):
-	os.remove("formatted_currents.csv")
-formatted_currents = open("formatted_currents.csv", "w")
+spice_output = open("Data/TXT/currents_big.txt", "r")
+if os.path.isfile("Data/CSV/Currents/formatted_currents_big.cvs"):
+	os.remove("Data/CSV/Currents/formatted_currents_big.csv")
+formatted_currents = open("Data/CSV/Currents/formatted_currents_big.csv", "w")
 
 # creating csv headers
 i_values = ""
-for i in range(0,NUMBER_OF_VALUES+1):
+for i in range(0, NUMBER_OF_VALUES+1):
 	i_values = i_values + (",I(V6)-" + str(i))
 
 formatted_currents.write("C,T1,T2,DIS,HDIST")
@@ -45,11 +45,11 @@ for line in lines:
 		line = line.replace("T2:", ",")
 		line = line.replace("\n", "")
 
-		for char in line: # removing spaces
+		for char in line:  # removing spaces
 			if char == " ":
 				output = line.replace(char, "")
 
-	if line.find("p") != -1:							
+	if line.find("p") != -1:
 		v6 = line.split()[1]					
 												
 		if v6.find("n") != -1:
@@ -57,6 +57,11 @@ for line in lines:
 			v6_number = float(v6_string) / 1000
 			v6_number = round(v6_number, 7)
 			v6 = str(v6_number) 
+		elif v6.find("p") != -1:
+			v6_string = v6.split("p")[0]
+			v6_number = float(v6_string) / (1000*1000)
+			v6_number = round(v6_number, 7)
+			v6 = str(v6_number)
 		else:
 			v6 = v6.split("u")[0]
 
@@ -79,21 +84,26 @@ spice_output.close()
 formatted_currents.close()
 
 # Spliting 'formatted_currents' into input and output files - THE CSV NEED TO BE WRITTEN IN BOTH FILES
-formatted_currents = open("formatted_currents.csv", "r")
-input_current = open("input_current.csv", "w")
-output_current = open("output_current.csv", "w")
+formatted_currents = open("Data/CSV/Currents/formatted_currents_big.csv", "r")
+input_current = open("Data/CSV/Currents/input_currents_big.csv", "w")
+output_current = open("Data/CSV/Currents/output_currents_big.csv", "w")
 
 formatted_lines = formatted_currents.readlines()
+
 for line in formatted_lines:
 
 	if line.find(",2.7139,") == -1:
-		print(line)
-		inp, outp = line.split(",I(V6)-0,")
+		inp = line.split(",I(V6)-0,")[0]
 		input_current.write(inp)
 		input_current.write(",I(V6)-0\n")
+		outp = line.split(",I(V6)-0,")[1]
 		output_current.write(outp)
 	else:
-		inp, outp = line.split(",2.7139,")
+		inp = line.split(",2.7139,")[0]
+		outp = line.split(",2.7139,")[1]
+
+		if len(line.split(",2.7139,")) > 2:  # on the off chance that 2.7139 appears for a second time
+			outp = outp + ",2.7139," + line.split(",2.7139,")[2]
 
 		input_current.write(inp)
 		input_current.write(",2.7139\n")
