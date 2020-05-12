@@ -2,10 +2,10 @@ import os
 
 NUMBER_OF_VALUES = 500
 
-spice_output = open("Data/TXT/currents_big.txt", "r")
+spice_output = open("Data/TXT/currents_3430_500.txt", "r")
 if os.path.isfile("Data/CSV/Currents/formatted_currents_big.cvs"):
-	os.remove("Data/CSV/Currents/formatted_currents_big.csv")
-formatted_currents = open("Data/CSV/Currents/formatted_currents_big.csv", "w")
+	os.remove("Data/CSV/Currents/formatted_currents_3430_500.csv")
+formatted_currents = open("Data/CSV/Currents/formatted_currents_3430_500.csv", "w")
 
 # creating csv headers
 i_values = ""
@@ -84,9 +84,9 @@ spice_output.close()
 formatted_currents.close()
 
 # Spliting 'formatted_currents' into input and output files - THE CSV NEED TO BE WRITTEN IN BOTH FILES
-formatted_currents = open("Data/CSV/Currents/formatted_currents_big.csv", "r")
-input_current = open("Data/CSV/Currents/input_currents_big.csv", "w")
-output_current = open("Data/CSV/Currents/output_currents_big.csv", "w")
+formatted_currents = open("Data/CSV/Currents/formatted_currents_3430_500.csv", "r")
+input_current = open("Data/CSV/Currents/input_currents_3430_500.csv", "w")
+output_current = open("Data/CSV/Currents/output_currents_3430_500.csv", "w")
 
 formatted_lines = formatted_currents.readlines()
 
