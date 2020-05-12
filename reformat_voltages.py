@@ -1,11 +1,13 @@
 import os
 
-NUMBER_OF_VALUES = 500
+NUMBER_OF_VALUES = 200
 
-text_data = open("Data/TXT/voltages_big.txt", "r")
-if os.path.isfile("Data/CSV/formatted_voltages_big.cvs"):
-	os.remove("Data/CSV/Voltages/formatted_voltages_big.csv")
-csv_data = open("Data/CSV/Voltages/formatted_voltages_big.csv", "w")
+text_data = open("Data/TXT/voltages.txt", "r")
+if os.path.isfile("Data/CSV/formatted_voltages.cvs"):
+	os.remove("Data/CSV/Voltages/formatted_voltages.csv")
+	os.remove("Data/CSV/Voltages/input_voltages.csv")
+	os.remove("Data/CSV/Voltages/output_voltages.csv")
+csv_data = open("Data/CSV/Voltages/formatted_voltages.csv", "w")
 
 vtimes = ""
 for i in range(0, NUMBER_OF_VALUES+1):
@@ -20,9 +22,9 @@ all_lines = text_data.readlines()
 line_number = 1
 recurring = 0
 
-for line in all_lines: # for line in list of lines
+for line in all_lines:  # for line in list of lines
 
-	if line_number == 1 or recurring == NUMBER_OF_VALUES+2: # replacing TOT with a line change
+	if line_number == 1 or recurring == NUMBER_OF_VALUES+2:  # replacing TOT with a line change
 		if recurring == NUMBER_OF_VALUES+2:
 			csv_data.write("\n")
 		line_number += 1
@@ -43,7 +45,8 @@ for line in all_lines: # for line in list of lines
 		line = line.replace("T2:", ",")
 		line = line.replace("\n", "")
 
-	for char in line: # removing spaces
+	output = line
+	for char in line:  # removing spaces
 		if char == " ":
 			output = line.replace(char, "")
 
@@ -63,14 +66,6 @@ for line in all_lines: # for line in list of lines
 
 		output = output.replace("\n", "")
 
-		# if output.find("m") != -1:
-		# 	actual, _ = output.split("m")
-		# 	number = float(actual) / 1000
-		# 	number = round(number, 7)
-		# 	actual = str(number)
-		# 	#print(actual)
-		# 	output = actual
-
 	if recurring == 0: # the initial voltage is not included in the previous if and is also always 1.1000
 		output = "1.1000,"
 
@@ -83,9 +78,9 @@ for line in all_lines: # for line in list of lines
 text_data.close()
 csv_data.close()
 
-csv_data = open("Data/CSV/Voltages/formatted_voltages_big.csv", "r")
-csv_input = open("Data/CSV/Voltages/input_voltages_big.csv", "w")
-csv_output = open("Data/CSV/Voltages/output_voltages_big.csv", "w")
+csv_data = open("Data/CSV/Voltages/formatted_voltages.csv", "r")
+csv_input = open("Data/CSV/Voltages/input_voltages.csv", "w")
+csv_output = open("Data/CSV/Voltages/output_voltages.csv", "w")
 
 lines = csv_data.readlines()
 for line in lines:
