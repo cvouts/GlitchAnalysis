@@ -1,15 +1,16 @@
-import os 
+import os
+from split_formatted_csv import split_csv
 
-NUMBER_OF_VALUES = 500
+NUMBER_OF_VALUES = 200
 
-spice_output = open("Data/TXT/currents_3430_500.txt", "r")
-if os.path.isfile("Data/CSV/Currents/formatted_currents_big.cvs"):
-	os.remove("Data/CSV/Currents/formatted_currents_3430_500.csv")
-formatted_currents = open("Data/CSV/Currents/formatted_currents_3430_500.csv", "w")
+spice_output = open("Data/TXT/currents.txt", "r")
+if os.path.isfile("Data/CSV/Currents/formatted_currents.cvs"):
+	os.remove("Data/CSV/Currents/formatted_currents.csv")
+formatted_currents = open("Data/CSV/Currents/formatted_currents.csv", "w")
 
 # creating csv headers
 i_values = ""
-for i in range(0, NUMBER_OF_VALUES+1):
+for i in range(1, NUMBER_OF_VALUES+1):
 	i_values = i_values + (",I(V6)-" + str(i))
 
 formatted_currents.write("C,T1,T2,DIS,HDIST")
@@ -72,7 +73,9 @@ for line in lines:
 			output = v6 + ","
 
 	if recurring == 0:
-		output = "2.7139,"
+		line_number += 1
+		recurring += 1
+		continue
 
 	if recurring != NUMBER_OF_VALUES+1:
 		formatted_currents.write(output)
@@ -84,31 +87,12 @@ spice_output.close()
 formatted_currents.close()
 
 # Spliting 'formatted_currents' into input and output files - THE CSV NEED TO BE WRITTEN IN BOTH FILES
-formatted_currents = open("Data/CSV/Currents/formatted_currents_3430_500.csv", "r")
-input_current = open("Data/CSV/Currents/input_currents_3430_500.csv", "w")
-output_current = open("Data/CSV/Currents/output_currents_3430_500.csv", "w")
+csv_data = open("Data/CSV/Currents/formatted_currents.csv", "r")
+csv_input = open("Data/CSV/Currents/input_currents.csv", "w")
+csv_output = open("Data/CSV/Currents/output_currents.csv", "w")
 
-formatted_lines = formatted_currents.readlines()
+split_csv(csv_data, csv_input, csv_output)
 
-for line in formatted_lines:
-
-	if line.find(",2.7139,") == -1:
-		inp = line.split(",I(V6)-0,")[0]
-		input_current.write(inp)
-		input_current.write(",I(V6)-0\n")
-		outp = line.split(",I(V6)-0,")[1]
-		output_current.write(outp)
-	else:
-		inp = line.split(",2.7139,")[0]
-		outp = line.split(",2.7139,")[1]
-
-		if len(line.split(",2.7139,")) > 2:  # on the off chance that 2.7139 appears for a second time
-			outp = outp + ",2.7139," + line.split(",2.7139,")[2]
-
-		input_current.write(inp)
-		input_current.write(",2.7139\n")
-		output_current.write(outp)
-
-input_current.close()
-output_current.close()
-formatted_currents.close()
+csv_input.close()
+csv_output.close()
+csv_data.close()

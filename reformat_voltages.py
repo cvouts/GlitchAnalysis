@@ -1,4 +1,5 @@
 import os
+from split_formatted_csv import split_csv
 
 NUMBER_OF_VALUES = 200
 
@@ -10,7 +11,7 @@ if os.path.isfile("Data/CSV/formatted_voltages.cvs"):
 csv_data = open("Data/CSV/Voltages/formatted_voltages.csv", "w")
 
 vtimes = ""
-for i in range(0, NUMBER_OF_VALUES+1):
+for i in range(1, NUMBER_OF_VALUES+1):
 	vtimes = vtimes + (",V3-" + str(i))
 
 csv_data.write("C,T1,T2,DIS,HDIST")
@@ -66,8 +67,10 @@ for line in all_lines:  # for line in list of lines
 
 		output = output.replace("\n", "")
 
-	if recurring == 0: # the initial voltage is not included in the previous if and is also always 1.1000
-		output = "1.1000,"
+	if recurring == 0:  # the initial voltage is not included in the previous if and is also always 1.1000
+		line_number += 1
+		recurring += 1
+		continue
 
 	if recurring != NUMBER_OF_VALUES+1: # if this is removed, the final value of every result is going to be doubled, due to the --- line (recurring 51)
 		csv_data.write(output)
@@ -82,20 +85,7 @@ csv_data = open("Data/CSV/Voltages/formatted_voltages.csv", "r")
 csv_input = open("Data/CSV/Voltages/input_voltages.csv", "w")
 csv_output = open("Data/CSV/Voltages/output_voltages.csv", "w")
 
-lines = csv_data.readlines()
-for line in lines:
-
-	if line.find(",1.1000,") == -1:
-		inp, outp = line.split(",V3-0,")
-		csv_input.write(inp)
-		csv_input.write(",V3-0\n")
-		csv_output.write(outp)
-	else:
-		inp, outp = line.split(",1.1000,")
-
-		csv_input.write(inp)
-		csv_input.write(",1.1000\n")
-		csv_output.write(outp)
+split_csv(csv_data, csv_input, csv_output)
 
 csv_input.close()
 csv_output.close()
