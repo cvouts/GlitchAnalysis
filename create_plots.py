@@ -13,7 +13,7 @@ if sys.argv[1].find("Currents") != -1:  # Setup for Currents
 else:                                   # Setup for Voltages
     INITIAL_VALUE = 1.1000
     y_axis_max = 1.12
-    y_axis_min = 0.9
+    y_axis_min = 0.95
     title = "Output Voltage (V3)"
     ylabel = "volt"
 
@@ -26,24 +26,36 @@ for i in range(1, NUMBER_OF_PICOSECONDS+1):
     initial_value_line.append(INITIAL_VALUE)
 
 lines = file.readlines()
-line_number = 1
+line_number = 0
 
-plt.axis([1, PLOT_TIME_LENGTH, y_axis_min, y_axis_max])
+plt.axis([1, 25, y_axis_min, y_axis_max])
 plt.title(title)
 plt.xlabel("picosecond")
 plt.ylabel(ylabel)
 plt.plot(time_axis, initial_value_line, "r--")
 
+per10 = 0
+
 for line in lines:
-    if line_number == 1:
+    if line_number == 0:
         line_number += 1
         continue
+
+    per10 += 1
 
     data_axis = []
     for word in line.split(","):  # from string to float
         data_axis.append(float(word))
 
+
     plt.plot(time_axis, data_axis)
+
+    if per10 == 10:
+        print("from", line_number-10, "to", line_number)
+        plt.show()
+        per10 = 0
+
+    line_number += 1
 
 plt.show()
 file.close()
