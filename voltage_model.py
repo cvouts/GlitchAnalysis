@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import pickle
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
@@ -23,7 +22,7 @@ time_axis = []
 for i in range(1, 201):
     time_axis.append(i)
 
-x = data_input[["C", "T1", "T2", "DIS", "HDIST"]]
+x = data_input[["C", "T1", "T2", "DIS"]]
 y = data_output[output_list]
 
 accuracy_sum = 0
@@ -37,10 +36,6 @@ for it in range(10):
     x_test = sc.transform(x_test)
 
     model.fit(x_train, y_train)
-
-    # dropping HDIST
-    x_train = np.delete(x_train, 4, axis=1)
-    x_test = np.delete(x_test, 4, axis=1)
 
     model.fit(x_train, y_train)
     test_prediction = model.predict(x_test)
