@@ -1,10 +1,8 @@
 import pandas as pd
 import pickle
+import common_tools # my file
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split, KFold
-import matplotlib.pyplot as plt
 from warnings import simplefilter
 simplefilter(action="ignore", category=FutureWarning)
 
@@ -40,38 +38,26 @@ for train_index, test_index in kf.split(x, y):
     x_test = x.iloc[test_index]
     y_test = y.iloc[test_index]
 
-    # stardardize x
-    sc = StandardScaler()
-    x_train = sc.fit_transform(x_train)
-    x_test = sc.transform(x_test)
+    # stardardize x_train and x_test
+    x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test)
 
-    # compare MSE for x_train and for x_test
+    # compare MSE for x_train and for x_test, return test error for comparison
     model.fit(x_train, y_train)
-    test_prediction = model.predict(x_test)
-    train_prediction = model.predict(x_train)
-    train_error = mean_squared_error(y_train, train_prediction)
-    test_error = mean_squared_error(y_test, test_prediction)
-    print("train error", train_error, "test error", test_error)
+    test_error = common_tools.train_test_mean_error("voltage", model, x_train, x_test, y_train, y_test)
 
     # if it == 0:
-    #     with open("Models/voltage_model", "wb") as f:
-    #         pickle.dump(model, f)
-    #     model_test_data_x = open("Models/model_test_data_x.txt", "w")
-    #     model_test_data_y = open("Models/model_test_data_y.txt", "w")
-    #     model_test_data_x.write(x_test.to_string())
-    #     model_test_data_y.write(y_test.to_string())
-    #     model_test_data_x.close()
-    #     model_test_data_y.close()
+    #    common_tools.save_model(model, x_test, y_test, "Models/voltage_model",
+    #                        "Models/model_test_data_x.txt", "Models/model_test_data_y.txt")
 
     if best_test_error > test_error:
         best_test_error = test_error
-        print("best error now is", best_test_error.round(2))
+        print("best error now is", best_test_error)
         best_x_train = x_train
         best_x_test = x_test
         best_y_train = y_train
         best_y_test = y_test
 
-print("best error was", best_test_error.round(2))
+print("best error was", best_test_error)
 x_train = best_x_train
 x_test = best_x_test
 y_train = best_y_train
@@ -97,12 +83,4 @@ for i in range(0, y_test.shape[0]):   # for each piece of data in the test datas
     # plot only for instances that actually fall below 1V
     if flag == 1:
         flag = 0
-        plt.axis([1, 200, 0.95, 1.12])
-        actual_line, = plt.plot(time_axis, y_test.iloc[i, :], "b-")
-        predicted_line, = plt.plot(time_axis, test_prediction[i, :], "r-")
-        title = "instance " + str(i + 1)
-        plt.legend((actual_line, predicted_line), ("actual", "predicted"))
-        plt.title(title)
-        plt.xlabel("picosecond")
-        plt.ylabel("volt")
-        plt.show()
+        common_tools.real_and_predicted_plots(y_test, test_prediction, i, "volt", [1, 200, 0.95, 1.12])
