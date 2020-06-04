@@ -83,4 +83,4 @@ for i in range(0, y_test.shape[0]):   # for each piece of data in the test datas
     # plot only for instances that actually fall below 1V
     if flag == 1:
         flag = 0
-        common_tools.real_and_predicted_plots(y_test, test_prediction, i, "volt", [1, 200, 0.95, 1.12])
+        common_tools.real_and_predicted_plots(y_test, test_prediction, i, "Voltage (V)", [1, 200, 0.95, 1.12])

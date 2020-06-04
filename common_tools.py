@@ -43,7 +43,7 @@ def real_and_predicted_plots(y_test, test_predict, current_element, ylabel, axis
     plt.axis(axis)
     time_axis = []
 
-    if ylabel == "volt":
+    if ylabel == "Voltage (V)":
         upper_limit = 201
     else:
         upper_limit = 21
@@ -56,8 +56,9 @@ def real_and_predicted_plots(y_test, test_predict, current_element, ylabel, axis
     title = "instance " + str(current_element+1)
     plt.legend((actual_line, predicted_line), ("actual", "predicted"))
     plt.title(title)
-    plt.xlabel("picosecond")
+    plt.xlabel("Time (pS)")
     plt.ylabel(ylabel)
+    # plt.figure()
     plt.show()
 
 
@@ -76,12 +77,11 @@ def compare_real_and_predicted(y_test, test_prediction, plot_ylabel):
         max_difference = max(list_of_differences)
         if max_difference > 10:
             more_than_10 += 1
+            real_and_predicted_plots(y_test, test_prediction, i, plot_ylabel, [1, 20, -50, 75])
         else:
             less_than_10 += 1
             if max_difference < 2:
                 less_than_2 += 1
-
-            real_and_predicted_plots(y_test, test_prediction, i, plot_ylabel, [1, 20, -75, 125])
 
     print("max difference of more than 10:", more_than_10, "\nmax difference of less than 10:", less_than_10,
           "\nspecifically, max difference of less than 2:", less_than_2)
@@ -94,6 +94,9 @@ def grid_search(estimator, grid, x, y):
     clf = GridSearchCV(estimator, param_grid=grid, cv=5)
     clf.fit(x, y)
     print(clf.best_params_)
+    number_of_estimators = sum(clf.best_params_.values())
+
+    return number_of_estimators
 
 
 def save_model(model, x_test, y_test, model_path, x_test_path, y_test_path):
