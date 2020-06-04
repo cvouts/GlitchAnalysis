@@ -1,42 +1,34 @@
 import pandas as pd
 import pickle
-import common_tools # my file
+import common_tools  # my file
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split
 from warnings import simplefilter
 simplefilter(action="ignore", category=FutureWarning)
 
-NUMBER_OF_DATA = 10780
 NUMBER_OF_VOLTAGE_VALUES = 200
 
+# getting the data from the csv
 data_input = pd.read_csv("Data/CSV/Voltages/input_voltages.csv", sep=",")
 data_output = pd.read_csv("Data/CSV/Voltages/output_voltages.csv", sep=",")
 
+# creating x by keeping only these columns from the input data
+x = data_input[["C", "T1", "T2", "HDIST"]]
+
+# creating y
 output_list = []
 for i in range(1, NUMBER_OF_VOLTAGE_VALUES+1):
     output_list.append("V3-" + str(i))
-
-time_axis = []
-for i in range(1, 201):
-    time_axis.append(i)
-
-x = data_input[["C", "T1", "T2", "HDIST"]]
 y = data_output[output_list]
 
 accuracy_sum = 0
 best_accuracy = 0
 model = RandomForestRegressor()
 
+# split the dataset repeatedly in order to keep the model with the best (smallest) test error
 best_test_error = 200
-
-# for it in range(10):
-#     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
-kf = KFold(n_splits=5, shuffle=True)
-for train_index, test_index in kf.split(x, y):
-    x_train = x.iloc[train_index]
-    y_train = y.iloc[train_index]
-    x_test = x.iloc[test_index]
-    y_test = y.iloc[test_index]
+for it in range(10):
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
 
     # stardardize x_train and x_test
     x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test)
@@ -63,7 +55,10 @@ x_test = best_x_test
 y_train = best_y_train
 y_test = best_y_test
 
+# train the model using the best x_train and y_train
 model.fit(x_train, y_train)
+
+# use the model to predict the values y_test of the x_test
 test_prediction = model.predict(x_test)
 
 flag = 0
