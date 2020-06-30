@@ -27,8 +27,11 @@ model = RandomForestRegressor()
 
 # split the dataset repeatedly in order to keep the model with the best (smallest) test error
 best_test_error = 200
+average_test_error = 0
 for it in range(10):
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+
+    x_test_values_for_plot_title = x_test
 
     # stardardize x_train and x_test
     x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test)
@@ -41,6 +44,9 @@ for it in range(10):
     #    common_tools.save_model(model, x_test, y_test, "Models/voltage_model",
     #                        "Models/model_test_data_x.txt", "Models/model_test_data_y.txt")
 
+
+    average_test_error += test_error
+
     if best_test_error > test_error:
         best_test_error = test_error
         print("best error now is", best_test_error)
@@ -48,12 +54,16 @@ for it in range(10):
         best_x_test = x_test
         best_y_train = y_train
         best_y_test = y_test
+        best_x_test_values_for_plot_title = x_test_values_for_plot_title
 
-print("best error was", best_test_error)
+    break
+
+print("best error was", best_test_error, "average error was", average_test_error/10)
 x_train = best_x_train
 x_test = best_x_test
 y_train = best_y_train
 y_test = best_y_test
+x_test_values_for_plot_title = x_test_values_for_plot_title
 
 # train the model using the best x_train and y_train
 model.fit(x_train, y_train)
@@ -78,4 +88,5 @@ for i in range(0, y_test.shape[0]):   # for each piece of data in the test datas
     # plot only for instances that actually fall below 1V
     if flag == 1:
         flag = 0
-        common_tools.real_and_predicted_plots(y_test, test_prediction, i, "Voltage (V)", [1, 200, 0.95, 1.12])
+        common_tools.real_and_predicted_plots(x_test_values_for_plot_title, y_test, test_prediction,
+                                              i, "Voltage (V)", [1, 200, 0.95, 1.12])

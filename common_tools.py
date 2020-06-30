@@ -39,7 +39,7 @@ def train_test_mean_error(model_kind, model, x_train, x_test, y_train, y_test):
     return test_error
 
 
-def real_and_predicted_plots(y_test, test_predict, current_element, ylabel, axis):
+def real_and_predicted_plots(x_test_values, y_test, test_predict, current_element, ylabel, axis):
     plt.axis(axis)
     time_axis = []
 
@@ -53,7 +53,8 @@ def real_and_predicted_plots(y_test, test_predict, current_element, ylabel, axis
 
     actual_line, = plt.plot(time_axis, y_test.iloc[current_element, :], "b-")
     predicted_line, = plt.plot(time_axis, test_predict[current_element, :], "r-")
-    title = "instance " + str(current_element+1)
+    # title = "instance " + str(current_element+1)
+    title = x_test_values
     plt.legend((actual_line, predicted_line), ("actual", "predicted"))
     plt.title(title)
     plt.xlabel("Time (pS)")
@@ -62,14 +63,14 @@ def real_and_predicted_plots(y_test, test_predict, current_element, ylabel, axis
     plt.show()
 
 
-def compare_real_and_predicted(y_test, test_prediction, plot_ylabel):
+def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
     less_than_2 = 0
     more_than_10 = 0
     less_than_10 = 0
     for i in range(0, y_test.shape[0]):  # for each piece of data in the test dataset
 
         list_of_differences = []
-        for j in range(0, y_test.shape[1]):  # for each voltage value in a test dataset piece
+        for j in range(0, y_test.shape[1]):  # for each voltage/current value in a test dataset piece
 
             difference = abs(y_test.iat[i, j].round(4) - test_prediction[i, j].round(4))
             list_of_differences.append(difference)
@@ -77,7 +78,9 @@ def compare_real_and_predicted(y_test, test_prediction, plot_ylabel):
         max_difference = max(list_of_differences)
         if max_difference > 10:
             more_than_10 += 1
-            real_and_predicted_plots(y_test, test_prediction, i, plot_ylabel, [1, 20, -50, 75])
+
+            real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test,
+                                     test_prediction, i, plot_ylabel, [1, 20, -50, 75])
         else:
             less_than_10 += 1
             if max_difference < 2:
@@ -108,3 +111,11 @@ def save_model(model, x_test, y_test, model_path, x_test_path, y_test_path):
     y_test_txt.write(y_test.to_string())
     x_test_txt.close()
     y_test_txt.close()
+
+
+# receives x_test.iloc[i] as parameter, the input data for a single simulation
+def format_x_test_string_data(x_test):
+    formatted_string = "C: " + str(x_test.iat[0]) + " T1: " + str(x_test.iat[1]) + " T2: " + \
+                       str(x_test.iat[2]) + " HDIST: " + str(x_test.iat[3])
+
+    return formatted_string
