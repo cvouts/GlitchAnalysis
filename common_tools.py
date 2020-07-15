@@ -67,6 +67,9 @@ def real_and_predicted_plots(x_test_values, y_actual, y_prediction, ylabel, axis
 
 def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
     average_mae = 0
+    less_than_two = 0
+    two_to_five = 0
+    more_than_five = 0
     for i in range(0, y_test.shape[0]):  # for each row of data in the test dataset
 
         y_test_row = y_test.iloc[i, :]
@@ -75,10 +78,19 @@ def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
         mae = mean_absolute_error(y_test_row, prediction_row)
         average_mae += mae
 
+        if mae < 2:
+            less_than_two += 1
+        elif 2 < mae < 5:
+            two_to_five += 1
+        else:
+            more_than_five += 1
 
-        real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test_row,
-                                 prediction_row, plot_ylabel, [1, 20, -50, 75], mae)
 
+        # real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test_row,
+        #                          prediction_row, plot_ylabel, [1, 20, -50, 75], mae)
+
+    print("MAE of less than 2:", ((less_than_two*100)/y_test.shape[0]).round(2), "%\nbetween 2 and 5:",
+          ((two_to_five*100)/y_test.shape[0]).round(2), "%\nmore than 5:", ((more_than_five*100)/y_test.shape[0])).round(2), "%"
     average_mae = average_mae / y_test.shape[0]
     print("average mean absolute error:", average_mae)
 
