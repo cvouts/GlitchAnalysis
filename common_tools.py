@@ -7,12 +7,17 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.model_selection import GridSearchCV
 
 
-def standardize_train_test_data(x_train, x_test):
-    sc = StandardScaler()
-    standard_x_train = sc.fit_transform(x_train)
-    standard_x_test = sc.transform(x_test)
+def standardize_train_test_data(x_train, x_test, type_of_scaler):
+    scaler = StandardScaler()
+    standard_x_train = scaler.fit_transform(x_train)
+    standard_x_test = scaler.transform(x_test)
 
-    return standard_x_train, standard_x_test
+    if type_of_scaler == 1:
+        pickle.dump(scaler, open("Models/current_scaler.pkl", "wb"))
+    elif type_of_scaler == 0:
+        pickle.dump(scaler, open("Models/voltage_scaler.pkl", "wb"))
+    else:
+        return standard_x_train, standard_x_test
 
 
 def get_pca(x_in):
@@ -41,25 +46,32 @@ def train_test_mean_error(model_kind, model, x_train, x_test, y_train, y_test):
 
 def real_and_predicted_plots(x_test_values, y_actual, y_prediction, ylabel, axis, mae):
     plt.axis(axis)
-    time_axis = []
+    time_axis = [0]
 
     if ylabel == "Voltage (V)":
         upper_limit = 201
+        y_actual_with_initial = pd.Series([1.1]).append(y_actual)
+        y_prediction_with_initial = pd.Series([1.1]).append(y_prediction)
     else:
-        upper_limit = 21
+        upper_limit = 41
+        y_actual_with_initial = pd.Series([0]).append(y_actual)
+        y_prediction_with_initial = pd.Series([0]).append(y_prediction)
 
     for k in range(1, upper_limit):
-        time_axis.append(k)
+        if upper_limit == 41:
+            time_axis.append(k/2)
+        else:
+            time_axis.append(k)
 
     mae_text = "Mean Absolute Error: " + str(mae.round(2)) + "uA"
 
-    actual_line, = plt.plot(time_axis, y_actual, "b-")
-    predicted_line, = plt.plot(time_axis, y_prediction, "r-")
+    actual_line, = plt.plot(time_axis, y_actual_with_initial, "b-")
+    predicted_line, = plt.plot(time_axis, y_prediction_with_initial, "r-")
     title = x_test_values
     plt.legend((actual_line, predicted_line), ("actual", "predicted"))
     plt.title(title)
     plt.text(5, -40, mae_text)
-    plt.xlabel("Time (pS)")
+    plt.xlabel("Time (ps)")
     plt.ylabel(ylabel)
     # plt.figure()
     plt.show()
@@ -72,8 +84,8 @@ def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
     more_than_five = 0
     for i in range(0, y_test.shape[0]):  # for each row of data in the test dataset
 
-        y_test_row = y_test.iloc[i, :]
-        prediction_row = test_prediction[i, :]
+        y_test_row = y_test.iloc[i]
+        prediction_row = pd.Series(test_prediction[i])
 
         mae = mean_absolute_error(y_test_row, prediction_row)
         average_mae += mae
@@ -85,12 +97,14 @@ def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
         else:
             more_than_five += 1
 
+        if mae < 2:
+            print("less than two")
+            real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test_row,
+                                     prediction_row, plot_ylabel, [0, 20, -50, 75], mae)
 
-        # real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test_row,
-        #                          prediction_row, plot_ylabel, [1, 20, -50, 75], mae)
-
-    print("MAE of less than 2:", ((less_than_two*100)/y_test.shape[0]).round(2), "%\nbetween 2 and 5:",
-          ((two_to_five*100)/y_test.shape[0]).round(2), "%\nmore than 5:", ((more_than_five*100)/y_test.shape[0])).round(2), "%"
+    print("MAE of less than 2:", round(((less_than_two*100)/y_test.shape[0]), 2), "%\nbetween 2 and 5:",
+          round(((two_to_five*100)/y_test.shape[0]), 2), "%\nmore than 5:",
+          round(((more_than_five*100)/y_test.shape[0]), 2), "%")
     average_mae = average_mae / y_test.shape[0]
     print("average mean absolute error:", average_mae)
 
