@@ -1,5 +1,5 @@
 import pandas as pd
-import pickle
+from pickle import dump
 import common_tools  # my file
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.multioutput import MultiOutputRegressor
@@ -7,11 +7,11 @@ from sklearn.model_selection import train_test_split
 from warnings import simplefilter
 simplefilter(action="ignore", category=FutureWarning)
 
-NUMBER_OF_CURRENT_VALUES = 20
+NUMBER_OF_CURRENT_VALUES = 40
 
 # getting the data from the csv
-data_input = pd.read_csv("Data/CSV/Currents/input_currents.csv", sep=",")
-data_output = pd.read_csv("Data/CSV/Currents/output_currents.csv", sep=",")
+data_input = pd.read_csv("Data/CSV/Currents/input_currents_half.csv", sep=",")
+data_output = pd.read_csv("Data/CSV/Currents/output_currents_half.csv", sep=",")
 
 # creating x by keeping only these columns from the input data
 x = data_input[["C", "T1", "T2", "HDIST"]]
@@ -19,7 +19,7 @@ x = data_input[["C", "T1", "T2", "HDIST"]]
 # creating y by keeping only the first 20 I(V6) values
 output_list = []
 for i in range(1, NUMBER_OF_CURRENT_VALUES+1):
-    output_list.append("I(V6)-" + str(i))
+    output_list.append("I(V6)-" + str(i/2))
 y = data_output[output_list]
 
 # can be used to get the Primary Component Analysis of x, comparing the weights of its factors
@@ -42,8 +42,12 @@ for it in range(10):
 
     x_test_values_for_plot_title = x_test
 
+    # keep the not standardized values in order to save the save the relevant scaler
+    original_x_train = x_train
+    original_x_test = x_test
+
     # get standardized x_train and x_test
-    x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test)
+    x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test, -1)
 
     model.fit(x_train, y_train)
 
@@ -60,6 +64,8 @@ for it in range(10):
         best_y_train = y_train
         best_y_test = y_test
         best_x_test_values_for_plot_title = x_test_values_for_plot_title
+        best_original_x_train = original_x_train
+        best_original_x_test = original_x_test
 
     if best_test_error < 4:
         break
@@ -70,9 +76,18 @@ x_test = best_x_test
 y_train = best_y_train
 y_test = best_y_test
 x_test_values_for_plot_title = x_test_values_for_plot_title
+x_train_for_scaler = best_original_x_train
+x_test_for_scaler = best_original_x_test
+
+# save the scaler
+common_tools.standardize_train_test_data(x_train_for_scaler, x_test_for_scaler, 1)
 
 # train the model using the best x_train and y_train
 model.fit(x_train, y_train)
+
+# save the model
+dump(model, open("Models/current_model.pkl", "wb"))
+exit()
 
 # use the model to predict the values y_test of the x_test
 test_prediction = model.predict(x_test)
