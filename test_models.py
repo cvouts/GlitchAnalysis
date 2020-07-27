@@ -1,22 +1,17 @@
+import sys
 from pickle import load
 
-voltage_model = load(open("voltage model filename", "rb"))
-current_model = load(open("current model filename", "rb"))
+# voltage_model = load(open("Models/voltage_model.pkl", "rb"))
+# voltage_scaler = load(open("Models/voltage_scaler.pkl", "rb"))
 
-# get the x input from inline arguments as well
-# standardize the input before the models are used on it (??)
+current_model = load(open("Models/current_model.pkl", "rb"))
+current_scaler = load(open("Models/current_scaler.pkl", "rb"))
 
-# voltage_prediction = voltage_model.predict(x_standardized)
-# current_prediction = current_model.predict(x_standardized)
+input_values = [[sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]]]
 
-# from pickle import dump
-# save the model
-# dump(model, open('model.pkl', 'wb'))
-# save the scaler
-# dump(scaler, open('scaler.pkl', 'wb'))
+x_predict = current_scaler.transform(input_values)
+prediction = current_model.predict(x_predict)
 
-# from pickle import load
-# load the model
-# model = load(open('model.pkl', 'rb'))
-# load the scaler
-# scaler = load(open('scaler.pkl', 'rb'))
+
+for i in range(0, prediction.size):
+    print((i+1)/2, prediction[0][i])
