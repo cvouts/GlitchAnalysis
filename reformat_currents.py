@@ -1,17 +1,17 @@
 import os
 from split_formatted_csv import split_csv
 
-NUMBER_OF_VALUES = 200
+NUMBER_OF_VALUES = 40
 
-spice_output = open("Data/TXT/currents.txt", "r")
-if os.path.isfile("Data/CSV/Currents/formatted_currents.cvs"):
-	os.remove("Data/CSV/Currents/formatted_currents.csv")
-formatted_currents = open("Data/CSV/Currents/formatted_currents.csv", "w")
+spice_output = open("Data/TXT/currents_half_time.txt", "r")
+if os.path.isfile("Data/CSV/Currents/formatted_currents_half.cvs"):
+	os.remove("Data/CSV/Currents/formatted_currents_half.csv")
+formatted_currents = open("Data/CSV/Currents/formatted_currents_half.csv", "w")
 
 # creating csv headers
 i_values = ""
 for i in range(1, NUMBER_OF_VALUES+1):
-	i_values = i_values + (",I(V6)-" + str(i))
+	i_values = i_values + (",I(V6)-" + str(i/2))
 
 formatted_currents.write("C,T1,T2,DIS,HDIST")
 formatted_currents.write(i_values)
@@ -50,9 +50,9 @@ for line in lines:
 			if char == " ":
 				output = line.replace(char, "")
 
-	if line.find("p") != -1:
-		v6 = line.split()[1]					
-												
+	if line.find("p") != -1 or line.find("500.00000f") != -1:
+		v6 = line.split()[1]
+
 		if v6.find("n") != -1:
 			v6_string = v6.split("n")[0]
 			v6_number = float(v6_string) / 1000
@@ -63,13 +63,17 @@ for line in lines:
 			v6_number = float(v6_string) / (1000*1000)
 			v6_number = round(v6_number, 7)
 			v6 = str(v6_number)
+		elif v6.find("m") != -1:
+			v6_string = v6.split("m")[0]
+			v6_number = float(v6_string) * 1000
+			v6_number = round(v6_number, 7)
+			v6 = str(v6_number)
 		else:
 			v6 = v6.split("u")[0]
 
 		if recurring == NUMBER_OF_VALUES:
 			output = v6
 		elif recurring < NUMBER_OF_VALUES:
-
 			output = v6 + ","
 
 	if recurring == 0:
@@ -87,9 +91,9 @@ spice_output.close()
 formatted_currents.close()
 
 # Spliting 'formatted_currents' into input and output files - THE CSV NEED TO BE WRITTEN IN BOTH FILES
-csv_data = open("Data/CSV/Currents/formatted_currents.csv", "r")
-csv_input = open("Data/CSV/Currents/input_currents.csv", "w")
-csv_output = open("Data/CSV/Currents/output_currents.csv", "w")
+csv_data = open("Data/CSV/Currents/formatted_currents_half.csv", "r")
+csv_input = open("Data/CSV/Currents/input_currents_half.csv", "w")
+csv_output = open("Data/CSV/Currents/output_currents_half.csv", "w")
 
 split_csv(csv_data, csv_input, csv_output)
 
