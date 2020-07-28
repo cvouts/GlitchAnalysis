@@ -1,5 +1,5 @@
 import pandas as pd
-import pickle
+from pickle import dump
 import common_tools  # my file
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
@@ -21,8 +21,6 @@ for i in range(1, NUMBER_OF_VOLTAGE_VALUES+1):
     output_list.append("V3-" + str(i))
 y = data_output[output_list]
 
-accuracy_sum = 0
-best_accuracy = 0
 model = RandomForestRegressor()
 
 # split the dataset repeatedly in order to keep the model with the best (smallest) test error
@@ -33,16 +31,17 @@ for it in range(10):
 
     x_test_values_for_plot_title = x_test
 
+    # keep the not standardized values in order to save the save the relevant scaler
+    original_x_train = x_train
+    original_x_test = x_test
+
+
     # stardardize x_train and x_test
-    x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test)
+    x_train, x_test = common_tools.standardize_train_test_data(x_train, x_test, -1)
 
     # compare MSE for x_train and for x_test, return test error for comparison
     model.fit(x_train, y_train)
     test_error = common_tools.train_test_mean_error("voltage", model, x_train, x_test, y_train, y_test)
-
-    # if it == 0:
-    #    common_tools.save_model(model, x_test, y_test, "Models/voltage_model",
-    #                        "Models/model_test_data_x.txt", "Models/model_test_data_y.txt")
 
 
     average_test_error += test_error
@@ -55,6 +54,8 @@ for it in range(10):
         best_y_train = y_train
         best_y_test = y_test
         best_x_test_values_for_plot_title = x_test_values_for_plot_title
+        best_original_x_train = original_x_train
+        best_original_x_test = original_x_test
 
     break
 
@@ -64,29 +65,20 @@ x_test = best_x_test
 y_train = best_y_train
 y_test = best_y_test
 x_test_values_for_plot_title = x_test_values_for_plot_title
+x_train_for_scaler = best_original_x_train
+x_test_for_scaler = best_original_x_test
+
+# save the scaler. 0 for voltage scaler
+common_tools.standardize_train_test_data(x_train_for_scaler, x_test_for_scaler, 0)
 
 # train the model using the best x_train and y_train
 model.fit(x_train, y_train)
 
+# # save the model
+# dump(model, open("Models/voltage_model.pkl", "wb"))
+# exit()
+
 # use the model to predict the values y_test of the x_test
 test_prediction = model.predict(x_test)
 
-flag = 0
-for i in range(0, y_test.shape[0]):   # for each piece of data in the test dataset
-    list_of_differences = []
-    for j in range(0, y_test.shape[1]):  # for each voltage value in a test dataset piece
-
-        difference = abs(y_test.iat[i, j].round(4) - test_prediction[i, j].round(4))
-        list_of_differences.append(difference)
-
-        if y_test.iat[i, j] < 1:
-            flag = 1
-
-    max_difference = max(list_of_differences)
-    print(max_difference)
-
-    # plot only for instances that actually fall below 1V
-    if flag == 1:
-        flag = 0
-        common_tools.real_and_predicted_plots(x_test_values_for_plot_title, y_test, test_prediction,
-                                              i, "Voltage (V)", [1, 200, 0.95, 1.12])
+common_tools.compare_real_and_predicted(x_test_values_for_plot_title, y_test, test_prediction, "Voltage (V)")
