@@ -1,0 +1,36 @@
+This file lists the function of every python file of this project
+
+Part 1: Creating and evaluating the dataset
+
+1.1 reformat_voltages and reformat_currents: take the data from the .txt files that were the output from HSPICE and
+create the corresponding input and output .csv files by transforming each .txt file to a .csv and then seperating that
+to an input .csv and an output .csv, both for currents and for voltages.
+
+1.2 half_check: tests whether the current output values with a step of 1 ps and those of a 0.5 ps step are the same
+or if the 0.5 ps step version picks up on spikes in value missed in the 1 ps step version.
+
+1.3 create_plots: plots every simulation from the dataset onto the same graph. It takes inline arguments in this fashion:
+path-to-output-csv-file max-number-of-values-in-file number-of-values-needed. So for example:
+"Data/CSV/Voltages/output_voltages.csv" 200 100
+will print the first 100 values of the voltage values in the dataset. It plots 10 simulations at a time.
+
+1.4 volt_and_curr: plots both voltage and current plots from the dataset, for the same input, on different graphs.
+
+
+Part 2: Machine learning
+
+2.1 voltage_model and current_model: the main files, they take the respective input and the output .csv files,
+do PCA on the data, choose the algorithm hyperparameters, create the appropriate model, make repeated train/test splits
+and based on the mean squared error of the predictions during each split, determine the best model. They then save
+that model and the scaler that was used to standardize the input. Additionally, they can use the best model to try
+to predict the output of the corresponding x_test and plot their prediction against the actual y_test values.
+
+2.2 test_models: loads the models and scalers saved by voltage_model and current_model and uses them on
+input provided as inline arguments. It produces two vectors of predictions.
+The input looks like: path-to-folder-containing-models-and-scalers C T1 T2 HDIST. So for example:
+Models 0.365616 0.00117378 0.00117378 0.2474351375
+
+
+Extra
+common_tools: this file has a number of methods that are used across multiple other files. Most are shared between
+voltage_model and current_model. The details of each are specified in the file itself.
