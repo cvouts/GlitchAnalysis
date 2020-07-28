@@ -1,5 +1,5 @@
 import os
-from split_formatted_csv import split_csv
+from common_tools import split_csv
 
 NUMBER_OF_VALUES = 40
 
