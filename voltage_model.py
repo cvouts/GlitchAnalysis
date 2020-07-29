@@ -1,3 +1,5 @@
+# creates the machine learning model that predicts the output voltage
+
 import pandas as pd
 from pickle import dump
 import common_tools  # my file
