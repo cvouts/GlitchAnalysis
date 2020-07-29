@@ -112,11 +112,13 @@ def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
         else:
             more_than_five += 1
 
+        ## these three cases can be used to create the respective kinds of plots
+        ## note: all voltage cases have mae < 2
         # if mae < 2:
         #     print("less than two")
         #     real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test_row,
         #                              prediction_row, plot_ylabel,  mae)
-        # if 2 < mae < 5:
+        # # if 2 < mae < 5:
         #     print("two to five")
         #     real_and_predicted_plots(format_x_test_string_data(x_test.iloc[i]), y_test_row,
         #                              prediction_row, plot_ylabel, mae)
