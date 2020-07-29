@@ -1,4 +1,8 @@
-This file lists the function of every python file of this project
+This project is the experimental part of my thesis.
+It uses output from HSPICE as input in a machine learning model that uses the random forest regression algorithm.
+The goal is the prediction of the output voltage and the power supply current of a NAND2 circuit during a glitch.
+---
+This file lists the function of every python file of this project.
 
 Part 1: Creating and evaluating the dataset
 
