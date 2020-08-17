@@ -3,6 +3,7 @@
 
 import pickle
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -29,9 +30,11 @@ def standardize_train_test_data(x_train, x_test, type_of_scaler):
 def get_pca(x_in):
     x_standardized = StandardScaler().fit_transform(x_in)
     pca = PCA()
+    # pca = PCA(0.95)
     pca.fit(x_standardized)
     print("PCA variance ratios for all:", pca.explained_variance_ratio_)
-    print(pd.DataFrame(pca.components_, columns=x_in.columns))
+    # print(pd.DataFrame(pca.components_, columns=x_in.columns))
+    # print(pca.n_components_)
 
 
 # returns the mean squared error of the test data subset. For a current model, rounds to 2 decimals
@@ -94,9 +97,11 @@ def real_and_predicted_plots(x_test_values, y_actual, y_prediction, ylabel, mae)
 # and the average mean absolute error across the entire test subset. Can also be used to show the plots
 def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
     average_mae = 0
+    average_mre = 0
     less_than_two = 0
     two_to_five = 0
     more_than_five = 0
+    mre_number = y_test.shape[0]
     for i in range(0, y_test.shape[0]):  # for each row of data in the test dataset
 
         y_test_row = y_test.iloc[i]
@@ -104,6 +109,14 @@ def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
 
         mae = mean_absolute_error(y_test_row, prediction_row)
         average_mae += mae
+
+        # mean relative error
+        mre = mean_relative_error(y_test_row, prediction_row)
+        # eliminating outliers
+        if mre < 100:
+            average_mre += mre
+        else:
+            mre_number -= 1
 
         if mae < 2:
             less_than_two += 1
@@ -132,7 +145,8 @@ def compare_real_and_predicted(x_test, y_test, test_prediction, plot_ylabel):
           round(((two_to_five*100)/y_test.shape[0]), 2), "%\nmore than 5:",
           round(((more_than_five*100)/y_test.shape[0]), 2), "%")
     average_mae = average_mae / y_test.shape[0]
-    print("average mean absolute error:", average_mae)
+    average_mre = round((average_mre / mre_number), 4)
+    print("average mean absolute error:", average_mae, "a percentage of", average_mre, "%")
 
 
 # grid search for the hyperparameters of the model. Repeated fitting of
@@ -147,6 +161,13 @@ def grid_search(estimator, grid, x, y):
     number_of_estimators = sum(clf.best_params_.values())
 
     return number_of_estimators
+
+
+def mean_relative_error(y_test_row, prediction_row):
+    array_real, array_prediction = np.array(y_test_row), np.array(prediction_row)
+    mre = np.mean(np.abs((array_real - array_prediction) / array_real)) * 100
+
+    return mre
 
 
 # saves the model using pickle
