@@ -1,0 +1,26 @@
+GROUNDING CURRENT: 
+	out of 10 repeats, best MSE was 5.42, average MSE was 6.87
+
+	MAE
+	less than 2: 95.18 %
+	between 2 and 5: 3.06 %
+	more than 5: 1.76 %
+	
+	average mean absolute error: 0.50 μA, a percentage of 5.40 %
+
+
+OUTPUT CURRENT:
+	out of 10 repeats, best MSE was 5.94, average MSE was 6.95
+
+	MAE
+	less than 2: 91.19 %
+	between 2 and 5: 6.96 %
+	more than 5: 1.86 %
+
+	average mean absolute error: 0.70 μA, a percentage of 14.63 %	
+
+
+
+
+
+
